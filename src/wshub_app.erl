@@ -21,6 +21,7 @@ start(_StartType, _StartArgs) ->
             {"/wshub", ws_handler, []}
         ]}
     ]),
+    lager:info("wshub starting.."),
     {ok, _} = cowboy:start_http(http, 100, [{port, 3000}],
         [{env, [{dispatch, Dispatch}]}]),
     'wshub_sup':start_link().

@@ -1,6 +1,6 @@
 # wshub
 
-WebSocket hub written in Erlang
+WebSocket hub written in Erlang, based on Cowboy
 
 Basic workings
 --------------
@@ -20,4 +20,4 @@ resulting in it being passed on via the WebSocket connection.
 Build
 -----
 
-    $ rebar3 compile
+    $ ./rebar3 release
