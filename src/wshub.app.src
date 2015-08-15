@@ -1,0 +1,19 @@
+{application, 'wshub',
+ [{description, "WebSocket hub written in Erlang"},
+  {vsn, "0.1.0"},
+  {registered, []},
+  {mod, {'wshub_app', []}},
+  {applications,
+   [kernel,
+    stdlib,
+    ranch,
+    cowlib,
+    cowboy
+   ]},
+  {env,[]},
+  {modules, []},
+
+  {contributors, []},
+  {licenses, []},
+  {links, []}
+ ]}.
