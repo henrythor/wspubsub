@@ -1,5 +1,5 @@
 -module(ws_handler).
--include("wshub.hrl").
+-include("wspubsub.hrl").
 -export([init/2]).
 -export([websocket_handle/3]).
 -export([websocket_info/3]).

@@ -1,9 +1,9 @@
 %%%-------------------------------------------------------------------
-%% @doc wshub top level supervisor.
+%% @doc wspubsub top level supervisor.
 %% @end
 %%%-------------------------------------------------------------------
 
--module('wshub_sup').
+-module('wspubsub_sup').
 
 -behaviour(supervisor).
 

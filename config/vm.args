@@ -1,6 +1,6 @@
--name wshub@127.0.0.1
+-name wspubsub@127.0.0.1
 
--setcookie wshub_cookie
+-setcookie wspubsub_cookie
 
 +K true
 +A30

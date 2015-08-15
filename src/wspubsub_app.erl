@@ -1,9 +1,9 @@
 %%%-------------------------------------------------------------------
-%% @doc wshub public API
+%% @doc wspubsub public API
 %% @end
 %%%-------------------------------------------------------------------
 
--module('wshub_app').
+-module('wspubsub_app').
 
 -behaviour(application).
 
@@ -18,13 +18,13 @@
 start(_StartType, _StartArgs) ->
     Dispatch = cowboy_router:compile([
         {'_', [
-            {"/wshub", ws_handler, []}
+            {"/wspubsub", ws_handler, []}
         ]}
     ]),
-    lager:info("wshub starting.."),
+    lager:info("wspubsub starting.."),
     {ok, _} = cowboy:start_http(http, 100, [{port, 3000}],
         [{env, [{dispatch, Dispatch}]}]),
-    'wshub_sup':start_link().
+    'wspubsub_sup':start_link().
 
 %%--------------------------------------------------------------------
 stop(_State) ->
