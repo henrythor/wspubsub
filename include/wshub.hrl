@@ -1,3 +1,3 @@
--record(ws, {hub :: pid()}).
+-record(ws, {server :: pid()}).
 
 -record(hub, {pub :: pid(), subs :: list()}).

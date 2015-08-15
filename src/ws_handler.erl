@@ -5,7 +5,7 @@
 -export([websocket_info/3]).
 
 init(Req, _Opts) ->
-    State = #ws{hub = undefined},
+    State = #ws{server = undefined},
 	{cowboy_websocket, Req, State}.
 
 websocket_handle(_Data, Req, State) ->
