@@ -18,7 +18,8 @@
 start(_StartType, _StartArgs) ->
     Dispatch = cowboy_router:compile([
         {'_', [
-            {"/wspubsub", ws_handler, []}
+            {"/ws/pub/[...]", ws_pub_handler, []},
+            {"/ws/sub/[...]", ws_sub_handler, []}
         ]}
     ]),
     lager:info("wspubsub starting.."),
