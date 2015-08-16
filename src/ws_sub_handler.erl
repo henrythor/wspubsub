@@ -21,4 +21,4 @@ websocket_info(_Info, Req, State) ->
     {ok, Req, State}.
 
 terminate(_Reason, _Req, State) ->
-    pg2:leave({subs, State#ws_sub.topic}, self()).
+    ok.

@@ -11,7 +11,9 @@ init(Req, _Opts) ->
     State = #ws_pub{server = Pid, topic = Topic},
 	{cowboy_websocket, Req, State}.
 
-websocket_handle(_Data, Req, State) ->
+websocket_handle(Data, Req, State) ->
+    % Send message received from publisher to the server, with 'pub' atom prefix
+    State#ws_pub.server ! {pub, Data},
 	{ok, Req, State}.
 
 websocket_info(_Info, Req, State) ->
