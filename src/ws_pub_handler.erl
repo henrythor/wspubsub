@@ -13,7 +13,7 @@ init(Req, _Opts) ->
 
 websocket_handle(Data, Req, State) ->
     % Send message received from publisher to the server, with 'pub' atom prefix
-    State#ws_pub.server ! {pub, Data},
+    gen_server:call(State#ws_pub.server, {send_message_to_all, Data}),
 	{ok, Req, State}.
 
 websocket_info(_Info, Req, State) ->

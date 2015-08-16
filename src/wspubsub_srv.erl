@@ -17,7 +17,7 @@ init(Args) ->
     State = #srv{owner = Owner, topic = Topic},
     {ok, State}.
 
-handle_call({pub, Message}, {Pid, _Tag}, State) ->
+handle_call({send_message_to_all, Message}, {Pid, _Tag}, State) ->
     case State#srv.owner of
         Pid ->
             Subs = pg2:get_members({subs, State#srv.topic}),

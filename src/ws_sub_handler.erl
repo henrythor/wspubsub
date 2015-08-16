@@ -17,8 +17,8 @@ init(Req, _Opts) ->
 websocket_handle(_Data, Req, State) ->
     {ok, Req, State}.
 
-websocket_info(_Info, Req, State) ->
-    {ok, Req, State}.
+websocket_info(Info, Req, State) ->
+    {reply, Info, Req, State}.
 
 terminate(_Reason, _Req, _State) ->
     ok.
