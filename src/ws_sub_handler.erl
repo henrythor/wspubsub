@@ -23,7 +23,7 @@ websocket_handle(_Data, Req, State) ->
     {ok, Req, State}.
 
 websocket_info({'topic going down', Pid}, Req, State) when Pid =:= State#ws_sub.server ->
-    {shutdown, Req, State};
+    {stop, Req, State};
 websocket_info({'topic message', Pid, Message}, Req, State) when Pid =:= State#ws_sub.server ->
     {reply, Message, Req, State};
 websocket_info(_Info, Req, State) ->
