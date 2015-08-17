@@ -1,5 +1,6 @@
--record(ws_pub, {server :: pid(),
-                 topic :: binary()}).
+-record(ws_pub, {server::pid()
+                ,topic::binary()
+                }).
 
 -spec ws_pub_handler:init(Req::cowboy_req:req(), Opts::any()) ->
     {cowboy_websocket, Req::cowboy_req:req(), State::#ws_pub{}}.

@@ -1,4 +1,6 @@
--record(ws_sub, {topic :: binary()}).
+-record(ws_sub, {server::pid()
+                ,topic::binary()
+                }).
 
 -spec ws_sub_handler:init(Req::cowboy_req:req(), Opts::any()) ->
     {cowboy_websocket, NewReq::cowboy_req:req(), State::#ws_sub{}}.

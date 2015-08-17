@@ -1,5 +1,7 @@
--record(srv, {owner :: pid,
-              topic :: binary()}).
+-record(srv, {owner::pid()
+             ,topic::binary()
+             ,subs::list()
+             }).
 -spec wspubsub_srv:init(Args::list()) -> {ok, State::#srv{}}.
 -spec wspubsub_srv:handle_call(Request::tuple(), From::tuple(), State::#srv{}) ->
     {noreply, NewState::#srv{}}.
