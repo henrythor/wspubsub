@@ -32,7 +32,9 @@ when Pid =:= State#ws_sub.server ->
 websocket_info(_Info, Req, State) ->
     {ok, Req, State}.
 
-terminate(_Reason, _Req, State) ->
+terminate(_Reason, _Req, State) when is_record(State, ws_sub) ->
     lager:debug("~s/~s/~s ~p going down",
         [?MODULE, State#ws_sub.domain, State#ws_sub.topic, self()]),
+    ok;
+terminate(_Reason, _Req, _State) ->
     ok.
