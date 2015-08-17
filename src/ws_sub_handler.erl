@@ -31,8 +31,4 @@ websocket_info(_Info, Req, State) ->
     {ok, Req, State}.
 
 terminate(_Reason, _Req, State) ->
-    try
-        gen_server:call(State#ws_sub.server, 'remove subscriber', 1000)
-    catch Error:Reason -> {Error, Reason}
-    end,
     ok.
