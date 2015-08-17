@@ -22,4 +22,8 @@ websocket_info(_Info, Req, State) ->
 	{ok, Req, State}.
 
 terminate(_Reason, _Req, State) ->
-    gen_server:call(State#ws_pub.server, 'topic going down').
+    try
+        gen_server:call(State#ws_pub.server, 'topic going down', 1000)
+    catch Error:Reason -> {Error, Reason}
+    end,
+    ok.

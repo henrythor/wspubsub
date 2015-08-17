@@ -14,7 +14,8 @@ init(Req, _Opts) ->
             State = #ws_sub{topic = Topic, server = Server},
             {cowboy_websocket, Req, State};
         V ->
-            lager:error("~s: Got ~p when trying to find server", [?MODULE, V]),
+            lager:error("~s/~p: Got ~p when trying to find server",
+                [?MODULE, Topic, V]),
             Req2 = cowboy_req:reply(404, [], Req),
             {ok, Req2, undefined}
     end.
@@ -30,4 +31,8 @@ websocket_info(_Info, Req, State) ->
     {ok, Req, State}.
 
 terminate(_Reason, _Req, State) ->
-    gen_server:call(State#ws_sub.server, 'remove subscriber').
+    try
+        gen_server:call(State#ws_sub.server, 'remove subscriber', 1000)
+    catch Error:Reason -> {Error, Reason}
+    end,
+    ok.
