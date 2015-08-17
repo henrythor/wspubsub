@@ -10,7 +10,8 @@ init(Req, _Opts) ->
     [Domain, Topic] = cowboy_req:path_info(Req),
     case global:whereis_name({srv, Domain, Topic}) of
         Server when is_pid(Server) ->
-            ok = gen_server:call(Server, 'add subscriber'),
+            erlang:monitor(process, Server),
+            ok = gen_server:call(Server, subscribe),
             State = #ws_sub{server = Server, domain = Domain, topic = Topic},
             {cowboy_websocket, Req, State};
         V ->
@@ -22,13 +23,16 @@ init(Req, _Opts) ->
 
 websocket_handle(_Data, Req, State) ->
     {ok, Req, State}.
-
-websocket_info({'topic going down', Pid}, Req, State) when Pid =:= State#ws_sub.server ->
+websocket_info({'DOWN', _Ref, process, Pid, _Reason}, Req, State)
+when Pid =:= State#ws_sub.server ->
     {stop, Req, State};
-websocket_info({'topic message', Pid, Message}, Req, State) when Pid =:= State#ws_sub.server ->
+websocket_info({'topic message', Pid, Message}, Req, State)
+when Pid =:= State#ws_sub.server ->
     {reply, Message, Req, State};
 websocket_info(_Info, Req, State) ->
     {ok, Req, State}.
 
 terminate(_Reason, _Req, State) ->
+    lager:debug("~s/~s/~s ~p going down",
+        [?MODULE, State#ws_sub.domain, State#ws_sub.topic, self()]),
     ok.

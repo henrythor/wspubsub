@@ -35,14 +35,14 @@ init(Args) ->
             {stop, 'permission denied'}
     end.
 
-handle_call('add subscriber', {Pid, _T}, State) ->
+handle_call(subscribe, {Pid, _T}, State) ->
     case lists:member(Pid, State#srv.subs) of
         true ->
-            lager:error("~s/~s/~s: ~p asking to be added as a sub, but already is",
+            lager:error("~s/~s/~s: ~p subscribing, but already is subscribed",
                 [?MODULE, State#srv.domain, State#srv.topic, Pid]),
             {reply, 'already a sub', State};
         false ->
-            lager:debug("~s/~s/~s: Adding ~p as a sub",
+            lager:debug("~s/~s/~s: ~p subscribing",
                 [?MODULE, State#srv.domain, State#srv.topic, Pid]),
             erlang:monitor(process, Pid),
             lager:debug("~s/~s/~s: subs before: ~p",
@@ -53,7 +53,7 @@ handle_call('add subscriber', {Pid, _T}, State) ->
                 [?MODULE, State#srv.domain, State#srv.topic, NewSubs]),
             {reply, ok, NewState}
     end;
-handle_call({'send', Message}, {Pid, _T}, State) when Pid =:= State#srv.owner ->
+handle_call({send, Message}, {Pid, _T}, State) when Pid =:= State#srv.owner ->
     lager:debug("~s/~s/~s: sending ~p to all subs",
         [?MODULE, State#srv.domain, State#srv.topic, Message]),
     send_to_all(State#srv.subs, {'topic message', self(), Message}),
@@ -66,7 +66,8 @@ handle_call(Request, From, State) ->
 handle_cast(_Request, State) ->
     {noreply, State}.
 
-handle_info({'DOWN', _Ref, process, Pid, _Reason}, State) when Pid =:= State#srv.owner ->
+handle_info({'DOWN', _Ref, process, Pid, _Reason}, State)
+when Pid =:= State#srv.owner ->
     lager:info("~s/~s/~s: Owner dying, killing topic",
         [?MODULE, State#srv.domain, State#srv.topic]),
     {stop, normal, State};
@@ -93,8 +94,6 @@ terminate(Reason, State) ->
     % node goes down, the name is unregistered on all nodes.
     lager:info("~s/~s/~s: dying, ~p",
         [?MODULE, State#srv.domain, State#srv.topic, Reason]),
-    State#srv.owner ! {'topic going down', self()},
-    send_to_all(State#srv.subs, {'topic going down', self()}),
     ok.
 
 code_change(_OldVsn, State, _Extra) ->
