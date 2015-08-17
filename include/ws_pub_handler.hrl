@@ -1,4 +1,5 @@
 -record(ws_pub, {server::pid()
+                ,domain::binary()
                 ,topic::binary()
                 }).
 

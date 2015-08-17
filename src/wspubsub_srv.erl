@@ -10,64 +10,76 @@
         ]).
 
 init(Args) ->
+    Domain = proplists:get_value(domain, Args),
     Topic = proplists:get_value(topic, Args),
     Owner = proplists:get_value(owner, Args),
-    _ApiKey = proplists:get_value(api_key, Args),
+    ApiKey = proplists:get_value(api_key, Args),
     % Make sure namespaces are locked by shared secrets (API keys)
-    case global:register_name({srv, Topic}, self()) of
-        yes ->
-            State = #srv{owner = Owner, topic = Topic, subs = []},
-            lager:info("~s: Created new topic ~p", [?MODULE, Topic]),
-            {ok, State};
-        no ->
-            {stop, 'topic already exists', null}
+    case {allowed, apikeys:verify_new_topic(ApiKey, Domain, Topic)} of
+        {allowed, true} ->
+            case {reg, global:register_name({srv, Domain, Topic}, self())} of
+                {reg, yes} ->
+                    State = #srv{owner = Owner
+                                ,domain = Domain
+                                ,topic = Topic
+                                ,subs = []
+                                },
+                    lager:info("~s: Created new topic ~s/~s",
+                        [?MODULE, Domain, Topic]),
+                    {ok, State};
+                {reg, no} ->
+                    {stop, 'topic already exists', null}
+            end;
+        {allowed, false} ->
+            {stop, 'permission denied'}
     end.
 
 handle_call('topic going down', {Pid, _T}, State) when Pid =:= State#srv.owner ->
-    lager:info("~s/~p: Owner killing topic", [?MODULE, State#srv.topic]),
+    lager:info("~s/~s/~s: Owner killing topic",
+        [?MODULE, State#srv.domain, State#srv.topic]),
     {stop, normal, State};
 handle_call('add subscriber', {Pid, _T}, State) ->
     case lists:member(Pid, State#srv.subs) of
         true ->
-            lager:error("~s/~p: ~p asking to be added as a sub, but already is",
-                [?MODULE, State#srv.topic, Pid]),
+            lager:error("~s/~s/~s: ~p asking to be added as a sub, but already is",
+                [?MODULE, State#srv.domain, State#srv.topic, Pid]),
             {reply, 'already a sub', State};
         false ->
-            lager:debug("~s/~p: Adding ~p as a sub",
-                [?MODULE, State#srv.topic, Pid]),
-            lager:debug("~s/~p: subs before: ~p",
-                [?MODULE, State#srv.topic, State#srv.subs]),
+            lager:debug("~s/~s/~s: Adding ~p as a sub",
+                [?MODULE, State#srv.domain, State#srv.topic, Pid]),
+            lager:debug("~s/~s/~s: subs before: ~p",
+                [?MODULE, State#srv.domain, State#srv.topic, State#srv.subs]),
             NewSubs = State#srv.subs ++ [Pid],
             NewState = State#srv{subs = NewSubs},
-            lager:debug("~s/~p: subs after: ~p",
-                [?MODULE, State#srv.topic, NewSubs]),
+            lager:debug("~s/~s/~s: subs after: ~p",
+                [?MODULE, State#srv.domain, State#srv.topic, NewSubs]),
             {reply, ok, NewState}
     end;
 handle_call('remove subscriber', {Pid, _T}, State) ->
     case lists:member(Pid, State#srv.subs) of
         true ->
-            lager:debug("~s/~p: Removing ~p from subs",
-                [?MODULE, State#srv.topic, Pid]),
-            lager:debug("~s/~p: subs before: ~p",
-                [?MODULE, State#srv.topic, State#srv.subs]),
+            lager:debug("~s/~s/~s: Removing ~p from subs",
+                [?MODULE, State#srv.domain, State#srv.topic, Pid]),
+            lager:debug("~s/~s/~s: subs before: ~p",
+                [?MODULE, State#srv.domain, State#srv.topic, State#srv.subs]),
             NewSubs = State#srv.subs -- [Pid],
             NewState = State#srv{subs = NewSubs},
-            lager:debug("~s/~p: subs after: ~p",
-                [?MODULE, State#srv.topic, NewSubs]),
+            lager:debug("~s/~s/~s: subs after: ~p",
+                [?MODULE, State#srv.domain, State#srv.topic, NewSubs]),
             {reply, ok, NewState};
         false ->
-            lager:error("~s/~p: ~p asking for sub removal, but isn't a sub",
-                [?MODULE, State#srv.topic, Pid]),
+            lager:error("~s/~s/~s: ~p asking for sub removal, but isn't a sub",
+                [?MODULE, State#srv.domain, State#srv.topic, Pid]),
             {reply, 'not a sub', State}
     end;
 handle_call({'send', Message}, {Pid, _T}, State) when Pid =:= State#srv.owner ->
-    lager:debug("~s/~p: sending ~p to all subs",
-        [?MODULE, State#srv.topic, Message]),
+    lager:debug("~s/~s/~s: sending ~p to all subs",
+        [?MODULE, State#srv.domain, State#srv.topic, Message]),
     send_to_all(State#srv.subs, {'topic message', self(), Message}),
     {reply, ok, State};
 handle_call(Request, From, State) ->
-    lager:error("~s/~p: Ignored call to ~p from ~p",
-        [?MODULE, State#srv.topic, Request, From]),
+    lager:error("~s/~s/~s: Ignored call to ~p from ~p",
+        [?MODULE, State#srv.domain, State#srv.topic, Request, From]),
     {reply, ignored, State}.
 
 handle_cast(_Request, State) ->
@@ -79,7 +91,8 @@ handle_info(_Info, State) ->
 terminate(Reason, State) ->
     % From 'global' manual: If a process with a registered name dies, or the
     % node goes down, the name is unregistered on all nodes.
-    lager:info("~s/~p: dying, ~p", [?MODULE, State#srv.topic, Reason]),
+    lager:info("~s/~s/~s: dying, ~p",
+        [?MODULE, State#srv.domain, State#srv.topic, Reason]),
     State#srv.owner ! {'topic going down', self()},
     send_to_all(State#srv.subs, {'topic going down', self()}),
     ok.

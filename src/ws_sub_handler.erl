@@ -7,15 +7,15 @@
         ]).
 
 init(Req, _Opts) ->
-    [Topic] = cowboy_req:path_info(Req),
-    case global:whereis_name({srv, Topic}) of
+    [Domain, Topic] = cowboy_req:path_info(Req),
+    case global:whereis_name({srv, Domain, Topic}) of
         Server when is_pid(Server) ->
             ok = gen_server:call(Server, 'add subscriber'),
-            State = #ws_sub{topic = Topic, server = Server},
+            State = #ws_sub{server = Server, domain = Domain, topic = Topic},
             {cowboy_websocket, Req, State};
         V ->
-            lager:error("~s/~p: Got ~p when trying to find server",
-                [?MODULE, Topic, V]),
+            lager:error("~s/~s/~s: Got ~p when trying to find server",
+                [?MODULE, Domain, Topic, V]),
             Req2 = cowboy_req:reply(404, [], Req),
             {ok, Req2, undefined}
     end.

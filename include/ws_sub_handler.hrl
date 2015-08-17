@@ -1,4 +1,5 @@
 -record(ws_sub, {server::pid()
+                ,domain::binary()
                 ,topic::binary()
                 }).
 

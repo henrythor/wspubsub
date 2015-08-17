@@ -7,16 +7,16 @@
         ]).
 
 init(Req, _Opts) ->
-    [ApiKey, Topic] = cowboy_req:path_info(Req),
-    Args = [{owner, self()}, {topic, Topic}, {api_key, ApiKey}],
+    [ApiKey, Domain, Topic] = cowboy_req:path_info(Req),
+    Args = [{owner, self()}, {domain, Domain}, {topic, Topic}, {api_key, ApiKey}],
     {ok, Pid} = gen_server:start(wspubsub_srv, Args, []),
-    State = #ws_pub{server = Pid, topic = Topic},
+    State = #ws_pub{server = Pid, domain = Domain, topic = Topic},
 	{cowboy_websocket, Req, State}.
 
 websocket_handle(Data, Req, State) ->
     % Send message received from publisher to the server, with 'pub' atom prefix
     ok = gen_server:call(State#ws_pub.server, {send, Data}),
-	{reply, {text, <<"received">>}, Req, State}.
+    {ok, Req, State}.
 
 websocket_info(_Info, Req, State) ->
 	{ok, Req, State}.
