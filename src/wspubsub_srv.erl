@@ -61,7 +61,8 @@ handle_call('remove subscriber', {Pid, _T}, State) ->
             {reply, 'not a sub', State}
     end;
 handle_call({'send', Message}, {Pid, _T}, State) when Pid =:= State#srv.owner ->
-    lager:debug("~s: sending ~p to all subs", [?MODULE, Message]),
+    lager:debug("~s/~p: sending ~p to all subs",
+        [?MODULE, State#srv.topic, Message]),
     send_to_all(State#srv.subs, {'topic message', self(), Message}),
     {reply, ok, State};
 handle_call(Request, From, State) ->
