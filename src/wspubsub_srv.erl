@@ -20,26 +20,27 @@ init(Args) ->
             lager:info("~s: Created new topic ~p", [?MODULE, Topic]),
             {ok, State};
         no ->
-            {stop, 'topic already exists'}
+            {stop, 'topic already exists', null}
     end.
 
 handle_call('topic going down', {Pid, _T}, State) when Pid =:= State#srv.owner ->
-    {stop, normal};
+    lager:info("~s: Owner killing topic ~p", [?MODULE, State#srv.topic]),
+    {stop, normal, State};
 handle_call('add subscriber', {Pid, _T}, State) ->
-    NewSubs = State#srv.subs ++ Pid,
+    NewSubs = State#srv.subs ++ [Pid],
     NewState = State#srv{subs = NewSubs},
-    {noreply, NewState};
+    {reply, ok, NewState};
 handle_call('remove subscriber', {Pid, _T}, State) ->
-    NewSubs = State#srv.subs -- Pid,
+    NewSubs = State#srv.subs -- [Pid],
     NewState = State#srv{subs = NewSubs},
-    {noreply, NewState};
+    {reply, ok, NewState};
 handle_call({'send', Message}, {Pid, _T}, State) when Pid =:= State#srv.owner ->
     lager:debug("~s: sending ~p to all subs", [?MODULE, Message]),
     send_to_all(State#srv.subs, {'topic message', self(), Message}),
-    {noreply, State};
+    {reply, ok, State};
 handle_call(Request, From, State) ->
     lager:error("~s: Ignored call to ~p from ~p", [?MODULE, Request, From]),
-    {noreply, State}.
+    {reply, ignored, State}.
 
 handle_cast(_Request, State) ->
     {noreply, State}.

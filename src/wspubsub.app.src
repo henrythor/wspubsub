@@ -4,12 +4,12 @@
   {registered, []},
   {mod, {'wspubsub_app', []}},
   {applications,
-   [kernel,
-    stdlib,
-    lager,
-    ranch,
-    cowlib,
-    cowboy
+   [kernel
+   ,stdlib
+   ,lager
+   ,ranch
+   ,cowlib
+   ,cowboy
    ]},
   {env,[]},
   {modules, []},

@@ -10,12 +10,13 @@ init(Req, _Opts) ->
     [Topic] = cowboy_req:path_info(Req),
     case global:whereis_name({srv, Topic}) of
         Server when is_pid(Server) ->
-            gen_server:call(Server, 'add subscriber'),
+            ok = gen_server:call(Server, 'add subscriber'),
             State = #ws_sub{topic = Topic, server = Server},
             {cowboy_websocket, Req, State};
-        _ ->
+        V ->
+            lager:error("~s: Got ~p when trying to find server", [?MODULE, V]),
             Req2 = cowboy_req:reply(404, [], Req),
-            {shutdown, Req2, undefined}
+            {ok, Req2, undefined}
     end.
 
 websocket_handle(_Data, Req, State) ->
