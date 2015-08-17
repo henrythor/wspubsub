@@ -29,5 +29,5 @@ websocket_info({'topic message', Pid, Message}, Req, State) when Pid =:= State#w
 websocket_info(_Info, Req, State) ->
     {ok, Req, State}.
 
-terminate(_Reason, _Req, _State) ->
-    ok.
+terminate(_Reason, _Req, State) ->
+    gen_server:call(State#ws_sub.server, 'remove subscriber').

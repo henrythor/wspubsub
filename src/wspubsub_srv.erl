@@ -27,22 +27,39 @@ handle_call('topic going down', {Pid, _T}, State) when Pid =:= State#srv.owner -
     lager:info("~s/~p: Owner killing topic", [?MODULE, State#srv.topic]),
     {stop, normal, State};
 handle_call('add subscriber', {Pid, _T}, State) ->
-    lager:debug("~s/~p: Adding ~p as a sub", [?MODULE, State#srv.topic, Pid]),
-    lager:debug("~s/~p: subs before: ~p",
-        [?MODULE, State#srv.topic, State#srv.subs]),
-    NewSubs = State#srv.subs ++ [Pid],
-    NewState = State#srv{subs = NewSubs},
-    lager:debug("~s/~p: subs after: ~p", [?MODULE, State#srv.topic, NewSubs]),
-    {reply, ok, NewState};
+    case lists:member(Pid, State#srv.subs) of
+        true ->
+            lager:error("~s/~p: ~p asking to be added as a sub, but already is",
+                [?MODULE, State#srv.topic, Pid]),
+            {reply, 'already a sub', State};
+        false ->
+            lager:debug("~s/~p: Adding ~p as a sub",
+                [?MODULE, State#srv.topic, Pid]),
+            lager:debug("~s/~p: subs before: ~p",
+                [?MODULE, State#srv.topic, State#srv.subs]),
+            NewSubs = State#srv.subs ++ [Pid],
+            NewState = State#srv{subs = NewSubs},
+            lager:debug("~s/~p: subs after: ~p",
+                [?MODULE, State#srv.topic, NewSubs]),
+            {reply, ok, NewState}
+    end;
 handle_call('remove subscriber', {Pid, _T}, State) ->
-    lager:debug("~s/~p: Removing ~p from subs",
-        [?MODULE, State#srv.topic, Pid]),
-    lager:debug("~s/~p: subs before: ~p",
-        [?MODULE, State#srv.topic, State#srv.subs]),
-    NewSubs = State#srv.subs -- [Pid],
-    NewState = State#srv{subs = NewSubs},
-    lager:debug("~s/~p: subs after: ~p", [?MODULE, State#srv.topic, NewSubs]),
-    {reply, ok, NewState};
+    case lists:member(Pid, State#srv.subs) of
+        true ->
+            lager:debug("~s/~p: Removing ~p from subs",
+                [?MODULE, State#srv.topic, Pid]),
+            lager:debug("~s/~p: subs before: ~p",
+                [?MODULE, State#srv.topic, State#srv.subs]),
+            NewSubs = State#srv.subs -- [Pid],
+            NewState = State#srv{subs = NewSubs},
+            lager:debug("~s/~p: subs after: ~p",
+                [?MODULE, State#srv.topic, NewSubs]),
+            {reply, ok, NewState};
+        false ->
+            lager:error("~s/~p: ~p asking for sub removal, but isn't a sub",
+                [?MODULE, State#srv.topic, Pid]),
+            {reply, 'not a sub', State}
+    end;
 handle_call({'send', Message}, {Pid, _T}, State) when Pid =:= State#srv.owner ->
     lager:debug("~s: sending ~p to all subs", [?MODULE, Message]),
     send_to_all(State#srv.subs, {'topic message', self(), Message}),
