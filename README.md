@@ -6,12 +6,12 @@ Basic workings
 --------------
 * Clients connect via /ws/pub and /ws/sub
 * Clients start (pub) or join (sub) a topic
-* Starting a channel launches a wspubsub_srv process for each channel,
+* Starting a topic launches a wspubsub_srv process for each topic,
 referenced by each connection as 'server' in their respective states.
 * Each wspubsub_srv has a list of clients in their state.
-* Each WebSocket connection may only be a member of 1 channel, but clients may
+* Each WebSocket connection may only be a member of 1 topic, but clients may
 have multiple Websocket connections if they want.
-* When a publisher sends a message to a channel, the receiving ws_handler
+* When a publisher sends a message to a topic, the receiving ws_handler
 forwards it to its server, which in turn messages the ws_handler for each member
 of the topic.
 * ws_handler processes receiving such a message will return it as a reply,
