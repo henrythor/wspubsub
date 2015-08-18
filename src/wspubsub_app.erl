@@ -16,6 +16,7 @@
 %%====================================================================
 
 start(_StartType, _StartArgs) ->
+    TransOpts = application:get_env(wspubsub, cowboy_trans, [{port, 3000}]),
     Dispatch = cowboy_router:compile([
         {'_', [
             {"/ws/pub/[...]", ws_pub_handler, []},
@@ -23,7 +24,8 @@ start(_StartType, _StartArgs) ->
         ]}
     ]),
     lager:info("wspubsub starting.."),
-    {ok, _} = cowboy:start_http(http, 100, [{port, 3000}],
+    lager:debug("transopts: ~p", [TransOpts]),
+    {ok, _} = cowboy:start_http(http, 100, TransOpts,
         [{env, [{dispatch, Dispatch}]}]),
     'wspubsub_sup':start_link().
 
