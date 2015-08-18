@@ -5,6 +5,8 @@ WebSocket pub/sub hub written in Erlang, based on Cowboy
 Basic workings
 --------------
 * Clients connect via /ws/pub and /ws/sub
+* Publishers use /ws/pub/<ApiKey>/<Domain>/<Topic>
+* Subscribers use /ws/sub/<Domain>/<Topic>
 * Clients start (pub) or join (sub) a topic
 * Starting a topic launches a wspubsub_srv process for each topic,
 referenced by each connection as 'server' in their respective states.
