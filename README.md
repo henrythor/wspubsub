@@ -13,9 +13,9 @@ referenced by each connection as 'server' in their respective states.
 * Each wspubsub_srv has a list of clients in their state.
 * Each WebSocket connection may only be a member of 1 topic, but clients may
 have multiple Websocket connections if they want.
-* When a publisher sends a message to a topic, the receiving ws_handler
-forwards it to its server, which in turn messages the ws_handler for each member
-of the topic.
+* When a publisher sends a message to a topic, the receiving ws_pub_handler
+forwards it to its server, which in turn messages the ws_sub_handler for each
+member of the topic.
 * ws_handler processes receiving such a message will return it as a reply,
 resulting in it being passed on via the WebSocket connection.
 
