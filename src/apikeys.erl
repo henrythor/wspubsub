@@ -1,11 +1,15 @@
 -module(apikeys).
--export([verify_new_topic/3]).
+-export([verify/2]).
 
-verify_new_topic(ApiKey, Domain, _Topic) ->
-    if
-        ApiKey =:= <<"f47ac10b-58cc-4372-a567-0e02b2c3d479">>,
-        Domain =:= <<"test">> ->
-            true;
-        true -> % else..
+verify(ApiKey, Domain) ->
+    Q = "SELECT domain FROM apikeys WHERE apikey=$1 AND domain=$2 AND active=true",
+    lager:debug("~s: Running query: query(\"~s\", [~p,~p])",
+        [?MODULE, Q, ApiKey, Domain]),
+    case pgclient:query(Q, [ApiKey, Domain]) of
+        {{select,1},[{Domain}]} -> true;
+        {{select,0},[]} -> false;
+        Result ->
+            lager:error("~s: query(\"~s\", [~p,~p]) resulted in error: ~p",
+                [?MODULE, Q, ApiKey, Domain, Result]),
             false
     end.

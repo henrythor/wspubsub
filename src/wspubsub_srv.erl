@@ -15,7 +15,7 @@ init(Args) ->
     Owner = proplists:get_value(owner, Args),
     ApiKey = proplists:get_value(api_key, Args),
     % Make sure namespaces are locked by shared secrets (API keys)
-    case {allowed, apikeys:verify_new_topic(ApiKey, Domain, Topic)} of
+    case {allowed, apikeys:verify(ApiKey, Domain)} of
         {allowed, true} ->
             case {reg, global:register_name({srv, Domain, Topic}, self())} of
                 {reg, yes} ->

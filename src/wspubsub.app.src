@@ -1,6 +1,6 @@
 {application, 'wspubsub',
  [{description, "WebSocket pub/sub hub written in Erlang"},
-  {vsn, "0.1.0"},
+  {vsn, "0.1.1"},
   {registered, []},
   {mod, {'wspubsub_app', []}},
   {applications,
@@ -11,6 +11,8 @@
    ,ranch
    ,cowlib
    ,cowboy
+   ,pgsql
+   ,episcina
    ]},
   {env,[]},
   {modules, []},
