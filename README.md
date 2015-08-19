@@ -21,10 +21,10 @@ resulting in it being passed on via the WebSocket connection.
 
 Build
 -----
-    `$ ./rebar3 tar`
-    Then copy the resulting tarball to server, unpack it, and run
-    `./bin/wspubsub start` to start it and `./bin/wspubsub attach` to attach a
-    shell.
+`$ ./rebar3 tar`
+Then copy the resulting tarball to server, unpack it, and run
+`./bin/wspubsub start` to start it and `./bin/wspubsub attach` to attach a
+shell.
 
 Database setup
 --------------
