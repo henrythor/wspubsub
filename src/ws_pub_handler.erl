@@ -7,11 +7,21 @@
         ]).
 
 init(Req, _Opts) ->
-    [ApiKey, Domain, Topic] = cowboy_req:path_info(Req),
-    Args = [{owner, self()}, {domain, Domain}, {topic, Topic}, {api_key, ApiKey}],
-    {ok, Pid} = gen_server:start(wspubsub_srv, Args, []),
-    erlang:monitor(process, Pid),
-    State = #ws_pub{server = Pid, domain = Domain, topic = Topic},
+    [ApiKey, Topic] = cowboy_req:path_info(Req),
+    [Domain] = cowboy_req:host_info(Req),
+    ServerPid = case global:whereis_name({srv, Domain, Topic}) of
+        Pid when is_pid(Pid) ->
+            Args = [{api_key, ApiKey}],
+            ok = gen_server:call(Pid, {new_owner, Args}),
+            Pid;
+        _ ->
+            Args = [{owner, self()}, {domain, Domain}, {topic, Topic},
+                    {api_key, ApiKey}],
+            {ok, Pid} = gen_server:start(wspubsub_srv, Args, []),
+            Pid
+    end,
+    erlang:monitor(process, ServerPid),
+    State = #ws_pub{server = ServerPid, domain = Domain, topic = Topic},
 	{cowboy_websocket, Req, State}.
 
 websocket_handle(Data, Req, State) ->
