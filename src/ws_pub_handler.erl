@@ -7,8 +7,7 @@
         ]).
 
 init(Req, _Opts) ->
-    [ApiKey, Topic] = cowboy_req:path_info(Req),
-    [Domain] = cowboy_req:host_info(Req),
+    [ApiKey, Domain, Topic] = cowboy_req:path_info(Req),
     ServerPid = case global:whereis_name({srv, Domain, Topic}) of
         Pid when is_pid(Pid) ->
             Args = [{api_key, ApiKey}],
